@@ -1,6 +1,6 @@
 {
   "name": "my-app",
-  "homepage": "https://hsuanya129.github.io/webcam_manipulation",
+  "homepage": "https://hsuanya129.github.io/webcam_manipulation_canvas",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

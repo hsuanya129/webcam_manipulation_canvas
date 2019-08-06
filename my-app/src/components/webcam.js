@@ -27,7 +27,7 @@ class Webcam extends React.Component {
     // to end video stream
     endStream = () => {
         this.videoTracks[0].stop();
-        this.stream.removeTrack(window.videoTracks[0]);
+        this.stream.removeTrack(this.videoTracks[0]);
         this.camVideo.current.srcObject = null;
         this.setState({
             buttonLabel: "create stream"
@@ -37,6 +37,7 @@ class Webcam extends React.Component {
     // to start a new video stream
     startStream = () => {
 
+        // TODO1: Need to be more familiar how it works
         let constraints = {
             audio:false,
             video:{
@@ -56,13 +57,14 @@ class Webcam extends React.Component {
 
                 this.stream = stream;
                 this.videoTracks = stream.getVideoTracks();
-                console.log("Using device: "+this.videoTracks[0].label);
+                console.log("Using device: "+this.videoTracks[0].label); // TODO2: try to make it more flexiable
                 this.camVideo.current.srcObject = stream;
-                this.camVideo.current.play();
-                this.setState({
+                this.camVideo.current.play()
+                .then(this.setState({
                     buttonLabel: "release stream"
-                });
-                this.processor();
+                }))
+                .then(this.processor());
+                
             })
             .catch((err) => {
                 this.setState({
@@ -75,6 +77,7 @@ class Webcam extends React.Component {
         this.startStream();
     }
 
+    //whenever the video play, call timerCallback
     processor = () => {
         console.log(this.c1.current.getContext('2d'));
         this.camVideo.current.addEventListener('play',()=>{
@@ -82,23 +85,21 @@ class Webcam extends React.Component {
         },false);
     }
 
-    // Need to figure out why
+    
     timerCallback = () => {
         if(this.camVideo.current.ended){
-            return
+            return;
         }
-        this.computeFrame();
+        this.computeFrame();  
         setTimeout(() => {
-            this.timerCallback();
-          }, 0);
+            this.timerCallback(); // TODO3: Need to be more familiar how it works,
+        }, 0);
     }
 
+    //Drawing video into canvas
     computeFrame = () => {
         let context1=this.c1.current.getContext('2d');
         context1.drawImage(this.camVideo.current,0,0,320,200);
-        context1.shadowColor = "black";
-        context1.shadowBlur=15;
-        
     }
 
 
