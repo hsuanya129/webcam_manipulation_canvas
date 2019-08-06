@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/webcam_manipulation_canvas/static/css/main.84cf5dc1.chunk.css",
+    "main.js": "/webcam_manipulation_canvas/static/js/main.49ebe05c.chunk.js",
+    "main.js.map": "/webcam_manipulation_canvas/static/js/main.49ebe05c.chunk.js.map",
+    "runtime~main.js": "/webcam_manipulation_canvas/static/js/runtime~main.3f965d41.js",
+    "runtime~main.js.map": "/webcam_manipulation_canvas/static/js/runtime~main.3f965d41.js.map",
+    "static/js/2.e703e8cc.chunk.js": "/webcam_manipulation_canvas/static/js/2.e703e8cc.chunk.js",
+    "static/js/2.e703e8cc.chunk.js.map": "/webcam_manipulation_canvas/static/js/2.e703e8cc.chunk.js.map",
+    "index.html": "/webcam_manipulation_canvas/index.html",
+    "precache-manifest.a25d8d9b53addbd9d1d9023c9f562df6.js": "/webcam_manipulation_canvas/precache-manifest.a25d8d9b53addbd9d1d9023c9f562df6.js",
+    "service-worker.js": "/webcam_manipulation_canvas/service-worker.js",
+    "static/css/main.84cf5dc1.chunk.css.map": "/webcam_manipulation_canvas/static/css/main.84cf5dc1.chunk.css.map"
+  }
+}
