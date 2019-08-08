@@ -7,8 +7,8 @@ class Webcam extends React.Component {
 
         this.state = {
             errorMsg: "",
-            streamState:false, //
-            options:""
+            streamState: true, //
+            effectType: "original"
         }
 
         this.camVideo = React.createRef();
@@ -32,7 +32,7 @@ class Webcam extends React.Component {
         this.stream.removeTrack(this.videoTracks[0]);
         this.camVideo.current.srcObject = null;
         this.setState({
-            streamState:false,
+            streamState: false,
         });
     }
 
@@ -46,8 +46,8 @@ class Webcam extends React.Component {
         navigator.mediaDevices.enumerateDevices()
             .then((devices) => {
                 this.videoDevices = devices.filter((device) => {
-                    return (device.kind === "videoinput" ) ;
-                }); 
+                    return (device.kind === "videoinput");
+                });
                 this.getUserMedia();
             })
 
@@ -61,26 +61,15 @@ class Webcam extends React.Component {
 
     // to get media stream
     getUserMedia = () => {
-        console.log("getUserMedia");
         navigator.mediaDevices.getUserMedia(this.constraints)
             .then((stream) => {
-                console.log("then")
                 this.stream = stream;
                 this.videoTracks = stream.getVideoTracks();
                 this.camVideo.current.srcObject = stream;
-                let options;
-                if (this.videoTracks) {
-                    console.log("options");
-                    options = this.videoDevices.map((device) => {
-                        return <option value={device.deviceId} selected={(this.videoTracks[0].label === device.label) ? true : false}>{device.label}</option>
-                    })
-                }
                 this.setState({
-                    streamState:true,
-                    options
+                    streamState: true,
                 });
                 this.processor();
-
             })
             .catch((err) => {
                 this.setState({
@@ -89,6 +78,12 @@ class Webcam extends React.Component {
             })
     }
 
+    // handling changes of camera
+    cameraSwitch = () => {
+        this.constraints.video.deviceId = { exact: this.cameraSelect.current.value };
+        this.endStream();
+        this.startStream();
+    }
 
     componentDidMount() {
         this.constraints = {
@@ -102,37 +97,72 @@ class Webcam extends React.Component {
         this.startStream();
     }
 
-    // handling changes of camera
-    cameraSwitch = () => {
-        this.constraints.video.deviceId = { exact: this.cameraSelect.current.value };
-        this.endStream();
-        this.startStream();
+
+    videoEffect = (e) => {
+        
+        console.log(e.target.value);
+        this.setState({
+            effectType: e.target.value
+        });
+        (e.target.value === "grayscale") ? this.grayScale() : (e.target.value === "blur") ? (this.blur()) : this.original();
+        
     }
 
-
-    //whenever the video play, call timerCallback
+    // whenever the video play, call original
     processor = () => {
-        // console.log(this.c1.current.getContext('2d'));
+        console.log(this.c1.current.getContext('2d'));
         this.camVideo.current.addEventListener('play', () => {
-            this.timerCallback();
+            this.original();
         }, false);
+        this.context = this.c1.current.getContext('2d');
     }
 
-
-    timerCallback = () => {
-        if (this.camVideo.current.ended) {
+    // call self and redo computeFrame every 30 milliseconds
+    original = () => {
+        if (this.camVideo.current.ended || this.state.streamState === false || this.state.effectType !== "original") {
             return;
         }
-        this.computeFrame();
+        console.log("c")
+        // let height = this.camVideo.current.offsetHeight;
+        // let width = this.camVideo.current.offsetWidth;
+
+        this.context.drawImage(this.camVideo.current, 0, 0, 320, 200);
         setTimeout(() => {
-            this.timerCallback(); // TODO3: Need to be more familiar how it works,
+            this.original();
         }, 0);
     }
 
-    //Drawing video into canvas
-    computeFrame = () => {
-        let context1 = this.c1.current.getContext('2d');
-        context1.drawImage(this.camVideo.current, 0, 0, 320, 200);
+    // it shows only 1 second
+    grayScale = () => {
+        console.log(this.state.effectType);
+        if (this.camVideo.current.ended || this.state.streamState === false || this.state.effectType !== "grayscale") {
+            return;
+        }
+        this.context.drawImage(this.camVideo.current, 0, 0, 320, 200);
+        let imageData = this.context.getImageData(0, 0, 320, 200);
+        let data = imageData.data;
+        for (var i = 0; i < data.length; i += 4) {
+            var avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+            data[i] = avg; // red
+            data[i + 1] = avg; // green
+            data[i + 2] = avg; // blue
+        }
+        this.context.putImageData(imageData, 0, 0);
+
+        setTimeout(() => {
+            this.grayScale();
+        }, 0);
+    }
+
+    blur = () => {
+        if (this.camVideo.current.ended || this.state.streamState === false || this.state.effectType !== "blur") {
+            return;
+        }
+        console.log("it's blur");
+    }
+
+    saveFrame = () => {
+        console.log("save");
     }
 
 
@@ -140,21 +170,41 @@ class Webcam extends React.Component {
 
 
     render() {
+        console.log("render");
+        let options;
+        if (this.videoTracks) {
+            options = this.videoDevices.map((device) => {
+                return <option key={device.deviceId} value={device.deviceId} selected={(this.videoTracks[0].label === device.label) ? true : false}>{device.label}</option>
+            })
+        }
         return (
             <div>
                 {this.state.errorMsg ? (<p> {this.state.errorMsg} </p>) :
                     (
                         <div>
-                            <video controls={true} className="webcam" ref={this.camVideo} loop autoPlay></video>
+                            <video controls={true} className="webcam" ref={this.camVideo} autoPlay playsInline></video>
                             <br />
                             <button onClick={this.startStream} hidden={this.state.streamState}>create stream</button>
                             <button onClick={this.endStream} hidden={!this.state.streamState}>release stream</button>
                             <select ref={this.cameraSelect} onChange={this.cameraSwitch} >
-                                {this.state.options}
+                                {options}
                             </select>
                             <br />
-                            <canvas className="c1" ref={this.c1} width={320} height={200}></canvas>
-                            <canvas className="c2" ref={this.c2} width={320} height={200}></canvas>
+
+                            {this.state.streamState ?
+                                (<div>
+                                    <canvas className="c1" ref={this.c1} width={320} height={200}></canvas>
+                                    <br />
+                                    <select onChange={this.videoEffect} defaultValue="original">
+                                        <option value="original">Original</option>
+                                        <option value="grayscale">Grayscale</option>
+                                        <option value="blur">Blur</option>
+                                    </select>
+                                    <button onClick={this.saveFrame}> Save </button>
+                                </div>) :
+                                <p> Create stream first </p>
+                            }
+
                         </div>
 
                     )
