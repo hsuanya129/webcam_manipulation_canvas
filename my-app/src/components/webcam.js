@@ -7,7 +7,8 @@ class Webcam extends React.Component {
 
         this.state = {
             errorMsg: "",
-            buttonLabel: "release stream",
+            streamState:false, //
+            options:""
         }
 
         this.camVideo = React.createRef();
@@ -31,7 +32,7 @@ class Webcam extends React.Component {
         this.stream.removeTrack(this.videoTracks[0]);
         this.camVideo.current.srcObject = null;
         this.setState({
-            buttonLabel: "create stream"
+            streamState:false,
         });
     }
 
@@ -45,28 +46,39 @@ class Webcam extends React.Component {
         navigator.mediaDevices.enumerateDevices()
             .then((devices) => {
                 this.videoDevices = devices.filter((device) => {
-                    return device.kind === "videoinput";
-                });
-                console.log(this.videoDevices[0].getCapabilities()); //TODO2: filter useless devices
+                    return (device.kind === "videoinput" ) ;
+                }); 
+                this.getUserMedia();
             })
-            .then(this.getUserMedia())
+
             .catch((err) => {
                 this.setState({
                     errorMsg: "Error message: " + (err.message ? err.message : err.name)
                 });
             })
+
     }
 
     // to get media stream
     getUserMedia = () => {
+        console.log("getUserMedia");
         navigator.mediaDevices.getUserMedia(this.constraints)
             .then((stream) => {
+                console.log("then")
                 this.stream = stream;
                 this.videoTracks = stream.getVideoTracks();
                 this.camVideo.current.srcObject = stream;
+                let options;
+                if (this.videoTracks) {
+                    console.log("options");
+                    options = this.videoDevices.map((device) => {
+                        return <option value={device.deviceId} selected={(this.videoTracks[0].label === device.label) ? true : false}>{device.label}</option>
+                    })
+                }
                 this.setState({
-                    buttonLabel: "release stream"
-                })
+                    streamState:true,
+                    options
+                });
                 this.processor();
 
             })
@@ -92,9 +104,7 @@ class Webcam extends React.Component {
 
     // handling changes of camera
     cameraSwitch = () => {
-        this.constraints.video.deviceId = {exact:this.cameraSelect.current.value};
-        console.log(this.stream);
-        console.log(this.videoTracks);
+        this.constraints.video.deviceId = { exact: this.cameraSelect.current.value };
         this.endStream();
         this.startStream();
     }
@@ -130,12 +140,6 @@ class Webcam extends React.Component {
 
 
     render() {
-        let options;
-        if (this.videoDevices) {
-            options = this.videoDevices.map((device) => {
-                return <option value={device.deviceId} selected ={(this.videoTracks[0].label === device.label) ? true : false}>{device.label}</option>
-            })
-        }
         return (
             <div>
                 {this.state.errorMsg ? (<p> {this.state.errorMsg} </p>) :
@@ -143,9 +147,10 @@ class Webcam extends React.Component {
                         <div>
                             <video controls={true} className="webcam" ref={this.camVideo} loop autoPlay></video>
                             <br />
-                            <button onClick={this.videoSwitch}>{this.state.buttonLabel}</button>
-                            <select ref={this.cameraSelect} onChange={this.cameraSwitch}>
-                                {options}
+                            <button onClick={this.startStream} hidden={this.state.streamState}>create stream</button>
+                            <button onClick={this.endStream} hidden={!this.state.streamState}>release stream</button>
+                            <select ref={this.cameraSelect} onChange={this.cameraSwitch} >
+                                {this.state.options}
                             </select>
                             <br />
                             <canvas className="c1" ref={this.c1} width={320} height={200}></canvas>
