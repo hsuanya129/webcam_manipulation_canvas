@@ -69,6 +69,8 @@ class Webcam extends React.Component {
                 this.setState({
                     streamState: true,
                 });
+
+
                 this.processor();
             })
             .catch((err) => {
@@ -100,21 +102,27 @@ class Webcam extends React.Component {
 
 
     videoEffect = (e) => {
-        
+
         this.effectType = e.target.value;
         (e.target.value === "grayscale") ? this.grayScale() : (e.target.value === "blur") ? (this.blur()) : this.original();
-        
+
     }
 
     // whenever the video play, call original
     processor = () => {
+
         console.log(this.c1.current.getContext('2d'));
         this.context = this.c1.current.getContext('2d');
         this.effectType = "original";
         this.camVideo.current.addEventListener('play', () => {
             this.original();
+            this.height = this.camVideo.current.videoHeight;
+            this.width = this.camVideo.current.videoWidth;
+            this.c1.current.width =this.width;
+            this.c1.current.height = this.height;
+
         }, false);
-        
+
     }
 
     // call self and redo computeFrame every 30 milliseconds
@@ -123,10 +131,8 @@ class Webcam extends React.Component {
         if (this.camVideo.current.ended || this.state.streamState === false || this.effectType !== "original") {
             return;
         }
-        // let height = this.camVideo.current.offsetHeight;
-        // let width = this.camVideo.current.offsetWidth;
 
-        this.context.drawImage(this.camVideo.current, 0, 0, 320, 200);
+        this.context.drawImage(this.camVideo.current, 0, 0, this.width, this.height);
         setTimeout(() => {
             this.original();
         }, 30);
@@ -138,15 +144,19 @@ class Webcam extends React.Component {
         if (this.camVideo.current.ended || this.state.streamState === false || this.effectType !== "grayscale") {
             return;
         }
-        this.context.drawImage(this.camVideo.current, 0, 0, 320, 200);
-        let imageData = this.context.getImageData(0, 0, 320, 200);
+        this.context.drawImage(this.camVideo.current, 0, 0, this.width, this.height);
+        let imageData = this.context.getImageData(0, 0, this.width, this.height);
         let data = imageData.data;
-        let l = data.length; // divided by 4 because rgba 
-        for (let i = 0; i < l; i +=4) {
-            let y =data[i]*0.30 + data[i + 1]*0.59 + data[i + 2]*0.11;
-            data[i] =y; // red
-            data[i + 1] =y; // green
-            data[i + 2] =y; // blue
+        let w = this.width * 4;
+        let h = this.height;
+
+        for (let i = 0; i < h; i++) {
+            for (let j = 0; j < w; j += 4) {  //mulitple by 4 because one pixel contains r,g,b,a
+                let y = data[i * w + j] * 0.30 + data[i * w + j + 1] * 0.59 + data[i * w + j + 2] * 0.11;
+                data[i * w + j] = y; //r
+                data[i * w + j + 1] = y; //g
+                data[i * w + j + 2] = y; //b
+            }
         }
         this.context.putImageData(imageData, 0, 0);
 
@@ -155,21 +165,35 @@ class Webcam extends React.Component {
         }, 0);
     }
 
+    //blur
     blur = () => {
         if (this.camVideo.current.ended || this.state.streamState === false || this.effectType !== "blur") {
             return;
         }
-        this.context.drawImage(this.camVideo.current, 0, 0, 320, 200);
-        let imageData = this.context.getImageData(0, 0, 320, 200);
+        this.context.drawImage(this.camVideo.current, 0, 0, this.width, this.height);
+        let imageData = this.context.getImageData(0, 0, this.width, this.height);
         let data = imageData.data;
-        let l = data.length; 
-        for (let i = 0; i < l; i +=64) {
-            for(let j=0;j<64;j+=4){
-                data[i+j] =data[i] ;
-                data[i+j+1] =data[i + 1] ;
-                data[i+j+2] =data[i + 2];
-            } 
+        let w = this.width * 4;
+        let h = this.height;
+
+        for (let i = 0; i < h; i++) {
+            var r, g, b;
+            for (let j = 0; j <= w; j += 4) {
+                if (i % 12 === 0 || j % 48 === 0) {
+                    data[i * w + j + 3] = 128;
+                    if (j % 48 === 0) {
+                        r = data[i * w + j];
+                        g = data[i * w + j + 1];
+                        b = data[i * w + j + 2];
+                    }
+                }
+                data[i * w + j] = r;
+                data[i * w + j + 1] = g;
+                data[i * w + j + 2] = b;
+                data[i * w + j + 3] = 250;
+            }
         }
+
         this.context.putImageData(imageData, 0, 0);
 
         setTimeout(() => {
@@ -208,9 +232,9 @@ class Webcam extends React.Component {
                             </select>
                             <br />
 
-                            {this.state.streamState ?
+                            {(this.state.streamState) ?
                                 (<div>
-                                    <canvas className="c1" ref={this.c1} width={320} height={200}></canvas>
+                                    <canvas className="c1" ref={this.c1} width={this.width} height={this.height}></canvas>
                                     <br />
                                     <select onChange={this.videoEffect} defaultValue="original">
                                         <option value="original">Original</option>
