@@ -7,19 +7,18 @@ class Webcam extends React.Component {
 
         this.state = {
             errorMsg: "",
-            streamState: true, //
-
+            streamState: true,
         }
 
         this.camVideo = React.createRef();
         this.cameraSelect = React.createRef();
         this.c1 = React.createRef();
-        this.c2 = React.createRef();
+        this.download = React.createRef();
     }
 
     // to switch on/off video stream
     videoSwitch = () => {
-        if (this.stream.active === true) {
+        if (this.state.streamState === true) {
             this.endStream();
         } else {
             this.startStream();
@@ -56,7 +55,6 @@ class Webcam extends React.Component {
                     errorMsg: "Error message: " + (err.message ? err.message : err.name)
                 });
             })
-
     }
 
     // to get media stream
@@ -69,9 +67,7 @@ class Webcam extends React.Component {
                 this.setState({
                     streamState: true,
                 });
-
-
-                this.processor();
+                this.initCanvas(); //initialize data we need in canvas
             })
             .catch((err) => {
                 this.setState({
@@ -94,40 +90,38 @@ class Webcam extends React.Component {
             video: {
                 width: { min: 640, ideal: 1920, max: 1920 },
                 height: { min: 400, ideal: 1080, max: 1080 },
-                aspectRatio: 1.777777778,
             }
         }
         this.startStream();
     }
 
-
+    // handling selection of videoEffects
     videoEffect = (e) => {
-
+        console.log(e.target.value);
         this.effectType = e.target.value;
-        (e.target.value === "grayscale") ? this.grayScale() : (e.target.value === "blur") ? (this.blur()) : this.original();
-
+        (e.target.value === "grayscale") ? this.grayScale() : (e.target.value === "blur") ? this.blur() : (e.target.value === "mosaic") ? this.mosaic() : this.original();
     }
 
-    // whenever the video play, call original
-    processor = () => {
-
-        console.log(this.c1.current.getContext('2d'));
+    // saving canvas data to component member and set the size
+    initCanvas = () => {
         this.context = this.c1.current.getContext('2d');
         this.effectType = "original";
         this.camVideo.current.addEventListener('play', () => {
-            this.original();
-            this.height = this.camVideo.current.videoHeight;
-            this.width = this.camVideo.current.videoWidth;
-            this.c1.current.width =this.width;
+            // this.height = this.camVideo.current.videoHeight; it lags to much at blur effect so we set smaller size 
+            // this.width = this.camVideo.current.videoWidth;
+            // let setting = this.videoTracks[0].getSettings();
+            this.height = 400;
+            this.width = 640;
+            // this.width = parseInt(this.height * setting.aspectRatio);
+            this.c1.current.width = this.width;
             this.c1.current.height = this.height;
-
+            this.original();
         }, false);
 
     }
 
-    // call self and redo computeFrame every 30 milliseconds
+    // original effect- call self and redo every 30 milliseconds
     original = () => {
-        console.log(this.effectType);
         if (this.camVideo.current.ended || this.state.streamState === false || this.effectType !== "original") {
             return;
         }
@@ -140,34 +134,30 @@ class Webcam extends React.Component {
 
     // grayscale
     grayScale = () => {
-        console.log(this.effectType);
         if (this.camVideo.current.ended || this.state.streamState === false || this.effectType !== "grayscale") {
             return;
         }
         this.context.drawImage(this.camVideo.current, 0, 0, this.width, this.height);
         let imageData = this.context.getImageData(0, 0, this.width, this.height);
         let data = imageData.data;
-        let w = this.width * 4;
-        let h = this.height;
+        let dimension = this.height * this.width * 4; //mulitple by 4 because one pixel contains r,g,b,a
 
-        for (let i = 0; i < h; i++) {
-            for (let j = 0; j < w; j += 4) {  //mulitple by 4 because one pixel contains r,g,b,a
-                let y = data[i * w + j] * 0.30 + data[i * w + j + 1] * 0.59 + data[i * w + j + 2] * 0.11;
-                data[i * w + j] = y; //r
-                data[i * w + j + 1] = y; //g
-                data[i * w + j + 2] = y; //b
-            }
+        for (let i = 0; i < dimension; i += 4) {
+            let y = data[i] * 0.30 + data[i + 1] * 0.59 + data[i + 2] * 0.11; //according to the grayscale formula
+            data[i] = y; //r
+            data[i + 1] = y; //g
+            data[i + 2] = y; //b
         }
-        this.context.putImageData(imageData, 0, 0);
 
+        this.context.putImageData(imageData, 0, 0);
         setTimeout(() => {
             this.grayScale();
-        }, 0);
+        }, 30);
     }
 
-    //blur
-    blur = () => {
-        if (this.camVideo.current.ended || this.state.streamState === false || this.effectType !== "blur") {
+    //mosaic only vertical blur, move to right a little
+    mosaic = () => {
+        if (this.camVideo.current.ended || this.state.streamState === false || this.effectType !== "mosaic") {
             return;
         }
         this.context.drawImage(this.camVideo.current, 0, 0, this.width, this.height);
@@ -177,15 +167,13 @@ class Webcam extends React.Component {
         let h = this.height;
 
         for (let i = 0; i < h; i++) {
-            var r, g, b;
-            for (let j = 0; j <= w; j += 4) {
-                if (i % 12 === 0 || j % 48 === 0) {
+            let r, g, b;
+            for (let j = 0; j < w; j += 4) {
+                if (j % 24 === 0 && j % 48 < 24) {
                     data[i * w + j + 3] = 128;
-                    if (j % 48 === 0) {
-                        r = data[i * w + j];
-                        g = data[i * w + j + 1];
-                        b = data[i * w + j + 2];
-                    }
+                    r = data[i * w + j];
+                    g = data[i * w + j + 1];
+                    b = data[i * w + j + 2];
                 }
                 data[i * w + j] = r;
                 data[i * w + j + 1] = g;
@@ -195,19 +183,50 @@ class Webcam extends React.Component {
         }
 
         this.context.putImageData(imageData, 0, 0);
+        setTimeout(() => {
+            this.mosaic();
+        }, 30);
+    }
 
+    //blur, need to be more efficient, easily lag
+    blur = () => {
+        if (this.camVideo.current.ended || this.state.streamState === false || this.effectType !== "blur") {
+            return;
+        }
+        this.context.drawImage(this.camVideo.current, 0, 0, this.width, this.height);
+        let imageData = this.context.getImageData(0, 0, this.width, this.height);
+        let data = imageData.data;
+        let dimension = this.width * this.height * 4;
+        let step = 3 * 3 * 4;
+        let r, g, b, count;
+
+
+        //iterate all pixels and mix its 6*6 pixels surrounded 
+        for (let i = 0; i < dimension; i += 4) { //i represent the central pixel
+            for (let k = i - step; k < i + step; k += 4) { //k represent surrounded pixels
+                if (data[k] >= 0 && Math.abs(k % (4 * this.width) - i % (4 * this.width)) <= this.width) { //to avoid border pixels mix 
+                    r += data[k];
+                    g += data[k + 1];
+                    b += data[k + 2];
+                    count += 1;
+                }
+            }
+            data[i] = parseInt(r / count);
+            data[i + 1] = parseInt(g / count);
+            data[i + 2] = parseInt(b / count);
+            r = g = b = count = 0;
+        }
+
+        this.context.putImageData(imageData, 0, 0);
         setTimeout(() => {
             this.blur();
-        }, 0);
+        }, 30);
     }
 
     saveFrame = () => {
-        console.log("save");
+        this.download.current.href=this.c1.current.toDataURL("image/png");
+        this.download.current.click();
     }
-
-
-
-
 
     render() {
         console.log("render");
@@ -223,7 +242,7 @@ class Webcam extends React.Component {
                 {this.state.errorMsg ? (<p> {this.state.errorMsg} </p>) :
                     (
                         <div>
-                            <video controls={true} className="webcam" ref={this.camVideo} autoPlay playsInline hidden={true}></video>
+                            <video controls={true} className="webcam" ref={this.camVideo} autoPlay playsInline hidden={false}></video>
                             <br />
                             <button onClick={this.startStream} hidden={this.state.streamState}>create stream</button>
                             <button onClick={this.endStream} hidden={!this.state.streamState}>release stream</button>
@@ -232,6 +251,7 @@ class Webcam extends React.Component {
                             </select>
                             <br />
 
+                            {/* TODO:seperate below to another component */}
                             {(this.state.streamState) ?
                                 (<div>
                                     <canvas className="c1" ref={this.c1} width={this.width} height={this.height}></canvas>
@@ -240,8 +260,11 @@ class Webcam extends React.Component {
                                         <option value="original">Original</option>
                                         <option value="grayscale">Grayscale</option>
                                         <option value="blur">Blur</option>
+                                        <option value="mosaic">Mosaic</option>
                                     </select>
                                     <button onClick={this.saveFrame}> Save </button>
+                                    <a ref={this.download} download="download.png"></a>
+                                    
                                 </div>) :
                                 <p> Create stream first </p>
                             }
