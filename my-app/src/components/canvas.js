@@ -35,7 +35,8 @@ class Canvas extends React.Component {
 
     // original effect- call self and redo every 30 milliseconds
     original = () => {
-        if (this.props.videoEnded || this.props.streamState === false || this.effectType !== "original") {
+    
+        if (window.videoTracks[0].readyState === "ended" || this.effectType !== "original") {
             return;
         }
 
@@ -47,7 +48,7 @@ class Canvas extends React.Component {
 
     // grayscale
     grayScale = () => {
-        if (this.props.videoEnded || this.props.streamState === false || this.effectType !== "grayscale") {
+        if (window.videoTracks[0].readyState === "ended" || this.effectType !== "grayscale") {
             return;
         }
 
@@ -71,7 +72,7 @@ class Canvas extends React.Component {
 
     //mosaic only vertical blur, move to right a little
     mosaic = () => {
-        if (this.props.videoEnded || this.props.streamState === false || this.effectType !== "mosaic") {
+        if (window.videoTracks[0].readyState === "ended" || this.effectType !== "mosaic") {
             return;
         }
         this.context.drawImage(window.camVideo, 0, 0, this.width, this.height);
@@ -104,7 +105,7 @@ class Canvas extends React.Component {
 
     //blur, need to be more efficient, easily lag
     blur = () => {
-        if (this.props.videoEnded || this.props.streamState === false || this.effectType !== "blur") {
+        if (window.videoTracks[0].readyState === "ended" || this.effectType !== "blur") {
             return;
         }
 

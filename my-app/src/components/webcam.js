@@ -119,7 +119,7 @@ class Webcam extends React.Component {
                             </select>
                             <br />
 
-                            {(this.state.streamState) ? <Canvas streamState={this.state.streamState} /> :
+                            {(this.state.streamState) ? <Canvas /> :
                                 <p> Create stream first </p>
                             }
 
