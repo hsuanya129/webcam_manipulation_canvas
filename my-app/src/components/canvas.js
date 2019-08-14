@@ -18,12 +18,12 @@ class Canvas extends React.Component {
     initCanvas = () => {
         this.context = this.c1.current.getContext('2d');
         this.effectType = "original";
-        this.original();
-        let setting = window.videoTracks[0].getSettings();
         this.height = 400;
-        this.width = parseInt(this.height * setting.aspectRatio);
+        let setting = window.videoTracks[0].getSettings();
+        this.width = (setting.aspectRatio) ? parseInt(this.height * setting.aspectRatio) : 640;
         this.c1.current.width = this.width;
         this.c1.current.height = this.height;
+        this.original();
     }
 
     // handling selection of videoEffects
