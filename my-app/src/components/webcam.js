@@ -61,19 +61,15 @@ class Webcam extends React.Component {
                 });
 
                 if (this.videoDevices) {
+                    let camera;
                     this.options = this.videoDevices.map((device) => {
+                        if (device.label === this.videoTracks[0].label) {
+                            camera = device.deviceId;
+                        }
                         return <option key={device.deviceId} value={device.deviceId} >{device.label}</option>
                     })
+                    this.setState({ camera, streamState: true });
                 }
-
-                this.videoDevices.map((device) => {
-
-                    let camera;
-                    if(device.label === this.videoTracks[0].label){
-                        camera = device.deviceId;
-                    } 
-                    this.setState({camera,streamState: true});
-                })
 
             })
 
@@ -94,6 +90,7 @@ class Webcam extends React.Component {
                 window.camVideo = this.camVideo.current;
                 window.videoTracks = this.videoTracks;
                 this.getVideoDevices();
+
             })
             .catch((err) => {
                 this.setState({
@@ -124,7 +121,7 @@ class Webcam extends React.Component {
                             <br />
                             <button onClick={this.startStream} hidden={this.state.streamState}>create stream</button>
                             <button onClick={this.endStream} hidden={!this.state.streamState}>release stream</button>
-                            <select onChange={this.cameraSwitch} value={this.state.camera}>
+                            <select onChange={this.cameraSwitch} defaultValue={this.state.camera}>
                                 {options}
                             </select>
                             <br />
