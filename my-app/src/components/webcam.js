@@ -117,7 +117,7 @@ class Webcam extends React.Component {
                     (
                         <div>
 
-                            <video controls={true} className="webcam" ref={this.camVideo} autoPlay playsInline hidden={true}></video>
+                            <video controls={true} className="webcam" ref={this.camVideo} autoPlay playsInline hidden={false}></video>
 
                             <br />
                             <button onClick={this.startStream} hidden={this.state.streamState}>create stream</button>

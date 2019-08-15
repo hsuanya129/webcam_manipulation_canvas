@@ -67,7 +67,7 @@ class Canvas extends React.Component {
         }, 30);
     }
 
-    //mosaic only vertical blur, move to right a little
+    //mosaic 
     mosaic = () => {
         if (window.videoTracks[0].readyState === "ended" || this.effectType !== "mosaic") {
             return;
@@ -78,19 +78,20 @@ class Canvas extends React.Component {
         let w = this.width * 4;
         let h = this.height;
 
-        for (let i = 0; i < h; i++) {
-            let r, g, b;
+        for (let i = 0; i < h; i += 6) {
+            let r,g,b;
             for (let j = 0; j < w; j += 4) {
-                if (j % 24 === 0 && j % 48 < 24) {
-                    data[i * w + j + 3] = 128;
+                if (j % 24 === 0  && i % 6 === 0) {
                     r = data[i * w + j];
                     g = data[i * w + j + 1];
                     b = data[i * w + j + 2];
                 }
-                data[i * w + j] = r;
-                data[i * w + j + 1] = g;
-                data[i * w + j + 2] = b;
-                data[i * w + j + 3] = 250;
+                for (let k = 0; k <6; k++) {
+                    data[(i+k) * w + j] = r;
+                    data[(i+k) * w + j + 1] = g;
+                    data[(i+k) * w + j + 2] = b;
+                }
+
             }
         }
 
@@ -110,7 +111,7 @@ class Canvas extends React.Component {
         let imageData = this.context.getImageData(0, 0, this.width, this.height);
         let data = imageData.data;
         let dimension = this.width * this.height * 4;
-        let step = 3 * 3 * 4;
+        let step = 2 * 2 * 4;
         let r, g, b, count;
 
 
