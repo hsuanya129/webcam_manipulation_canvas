@@ -118,10 +118,11 @@ class Webcam extends React.Component {
                         <div>
 
                             <video controls={true} className="webcam" ref={this.camVideo} autoPlay playsInline hidden={true}></video>
+
                             <br />
                             <button onClick={this.startStream} hidden={this.state.streamState}>create stream</button>
                             <button onClick={this.endStream} hidden={!this.state.streamState}>release stream</button>
-                            <select onChange={this.cameraSwitch} defaultValue={this.state.camera}>
+                            <select onChange={this.cameraSwitch} value={this.state.camera}>
                                 {options}
                             </select>
                             <br />

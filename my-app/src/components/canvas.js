@@ -17,7 +17,7 @@ class Canvas extends React.Component {
         this.effectType = "original";
         this.height = 400;
         let setting = window.videoTracks[0].getSettings();
-        this.width = (setting.aspectRatio) ? parseInt(this.height * setting.aspectRatio) : 640;
+        this.width = (setting.aspectRatio) ? parseInt(this.height * setting.aspectRatio) : parseInt(setting.width / setting.height * this.height);
         this.c1.current.width = this.width;
         this.c1.current.height = this.height;
         this.original();
@@ -32,8 +32,8 @@ class Canvas extends React.Component {
 
     // original effect- call self and redo every 30 milliseconds
     original = () => {
-    
-        if (window.videoTracks[0].readyState === "ended" || this.effectType !== "original") {
+        console.log("original");
+        if (window.camVideo.srcObject === null || this.effectType !== "original") {
             return;
         }
 
@@ -137,13 +137,15 @@ class Canvas extends React.Component {
     }
 
     saveFrame = () => {
+        let url = this.c1.current.toDataURL("image/png");
         let a = document.createElement('a');
-        a.href = this.c1.current.toDataURL("image/png");
-        a.download=this.effectType+".png";
-        a.click();
+        a.href = url;
+        a.download = this.effectType + ".png";
+        a.dispatchEvent(new MouseEvent('click')); //fire a.click event
     }
 
     render() {
+
         return (
             <div>
                 <canvas className="c1" ref={this.c1}></canvas>
@@ -155,7 +157,7 @@ class Canvas extends React.Component {
                     <option value="mosaic">Mosaic</option>
                 </select>
                 <button onClick={this.saveFrame}> Save </button>
-              
+
             </div>
         )
     }
