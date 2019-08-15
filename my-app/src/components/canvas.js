@@ -40,7 +40,7 @@ class Canvas extends React.Component {
         this.context.drawImage(window.camVideo, 0, 0, this.width, this.height);
         setTimeout(() => {
             this.original();
-        }, 30);
+        }, 40);
     }
 
     // grayscale
@@ -64,7 +64,7 @@ class Canvas extends React.Component {
         this.context.putImageData(imageData, 0, 0);
         setTimeout(() => {
             this.grayScale();
-        }, 30);
+        }, 40);
     }
 
     //mosaic 
@@ -78,15 +78,16 @@ class Canvas extends React.Component {
         let w = this.width * 4;
         let h = this.height;
 
-        for (let i = 0; i < h; i += 6) {
+        for (let i = 0; i < h; i += 24) {
             let r,g,b;
             for (let j = 0; j < w; j += 4) {
-                if (j % 24 === 0  && i % 6 === 0) {
+                if (j % 96 === 0  && i % 24 === 0) {
+                    data[i * w + j+3] = 240;
                     r = data[i * w + j];
                     g = data[i * w + j + 1];
                     b = data[i * w + j + 2];
                 }
-                for (let k = 0; k <6; k++) {
+                for (let k = 0; k <24; k++) {
                     data[(i+k) * w + j] = r;
                     data[(i+k) * w + j + 1] = g;
                     data[(i+k) * w + j + 2] = b;
@@ -98,7 +99,7 @@ class Canvas extends React.Component {
         this.context.putImageData(imageData, 0, 0);
         setTimeout(() => {
             this.mosaic();
-        }, 30);
+        }, 40);
     }
 
     //blur, need to be more efficient, easily lag
@@ -134,7 +135,7 @@ class Canvas extends React.Component {
         this.context.putImageData(imageData, 0, 0);
         setTimeout(() => {
             this.blur();
-        }, 30);
+        }, 40);
     }
 
     saveFrame = () => {
