@@ -4,10 +4,7 @@ import './../App.css';
 class Canvas extends React.Component {
     constructor(props) {
         super(props);
-
         this.c1 = React.createRef();
-        this.download = React.createRef();
-
     }
 
     componentDidMount() {
@@ -140,8 +137,10 @@ class Canvas extends React.Component {
     }
 
     saveFrame = () => {
-        this.download.current.href = this.c1.current.toDataURL("image/png");
-        this.download.current.click();
+        let a = document.createElement('a');
+        a.href = this.c1.current.toDataURL("image/png");
+        a.download=this.effectType+".png";
+        a.click();
     }
 
     render() {
@@ -156,7 +155,7 @@ class Canvas extends React.Component {
                     <option value="mosaic">Mosaic</option>
                 </select>
                 <button onClick={this.saveFrame}> Save </button>
-                <a ref={this.download} download="download.png"></a>
+              
             </div>
         )
     }
