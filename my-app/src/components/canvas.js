@@ -7,8 +7,10 @@ class Canvas extends React.Component {
         this.c1 = React.createRef();
     }
 
-    componentDidMount() {
-        this.initCanvas();
+    componentDidUpdate() {
+        if (this.props.streamState) {
+            this.initCanvas();
+        }
     }
 
     // saving canvas data to component member and set the size
@@ -32,11 +34,9 @@ class Canvas extends React.Component {
 
     // original effect- call self and redo every 30 milliseconds
     original = () => {
-        console.log("original");
-        if (window.camVideo.srcObject === null || this.effectType !== "original") {
+        if (window.camVideo.srcObject === null || this.props.streamState === false || this.effectType !== "original") {
             return;
         }
-
         this.context.drawImage(window.camVideo, 0, 0, this.width, this.height);
         setTimeout(() => {
             this.original();
@@ -45,7 +45,7 @@ class Canvas extends React.Component {
 
     // grayscale
     grayScale = () => {
-        if (window.videoTracks[0].readyState === "ended" || this.effectType !== "grayscale") {
+        if (window.videoTracks[0].readyState === "ended" || this.props.streamState === false || this.effectType !== "grayscale") {
             return;
         }
 
@@ -69,7 +69,7 @@ class Canvas extends React.Component {
 
     //mosaic 
     mosaic = () => {
-        if (window.videoTracks[0].readyState === "ended" || this.effectType !== "mosaic") {
+        if (window.videoTracks[0].readyState === "ended" || this.props.streamState === false || this.effectType !== "mosaic") {
             return;
         }
         this.context.drawImage(window.camVideo, 0, 0, this.width, this.height);
@@ -79,18 +79,18 @@ class Canvas extends React.Component {
         let h = this.height;
 
         for (let i = 0; i < h; i += 24) {
-            let r,g,b;
+            let r, g, b;
             for (let j = 0; j < w; j += 4) {
-                if (j % 96 === 0  && i % 24 === 0) {
-                    data[i * w + j+3] = 240;
+                if (j % 96 === 0 && i % 24 === 0) {
+                    data[i * w + j + 3] = 240;
                     r = data[i * w + j];
                     g = data[i * w + j + 1];
                     b = data[i * w + j + 2];
                 }
-                for (let k = 0; k <24; k++) {
-                    data[(i+k) * w + j] = r;
-                    data[(i+k) * w + j + 1] = g;
-                    data[(i+k) * w + j + 2] = b;
+                for (let k = 0; k < 24; k++) {
+                    data[(i + k) * w + j] = r;
+                    data[(i + k) * w + j + 1] = g;
+                    data[(i + k) * w + j + 2] = b;
                 }
 
             }
@@ -104,7 +104,7 @@ class Canvas extends React.Component {
 
     //blur, need to be more efficient, easily lag
     blur = () => {
-        if (window.videoTracks[0].readyState === "ended" || this.effectType !== "blur") {
+        if (window.videoTracks[0].readyState === "ended" || this.props.streamState === false || this.effectType !== "blur") {
             return;
         }
 
@@ -150,16 +150,20 @@ class Canvas extends React.Component {
 
         return (
             <div>
-                <canvas className="c1" ref={this.c1}></canvas>
-                <br />
-                <select onChange={this.videoEffect} defaultValue="original">
-                    <option value="original">Original</option>
-                    <option value="grayscale">Grayscale</option>
-                    <option value="blur">Blur</option>
-                    <option value="mosaic">Mosaic</option>
-                </select>
-                <button onClick={this.saveFrame}> Save </button>
+                {(this.props.streamState) ?
+                    <div>
+                        <canvas className="c1" ref={this.c1}></canvas>
+                        <br />
+                        <select onChange={this.videoEffect} defaultValue="original">
+                            <option value="original">Original</option>
+                            <option value="grayscale">Grayscale</option>
+                            <option value="blur">Blur</option>
+                            <option value="mosaic">Mosaic</option>
+                        </select>
+                        <button onClick={this.saveFrame}> Save </button>
 
+                    </div>
+                    : (<p> Create stream first </p>)}
             </div>
         )
     }

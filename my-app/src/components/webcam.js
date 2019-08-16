@@ -7,17 +7,18 @@ class Webcam extends React.Component {
         super(props);
 
         this.state = {
-            errorMsg: "",
-            streamState: "",
-            camera: ""
+            errorMsg: "", //show messages and indicate the errors -string message
+            streamState: "", //indicate current stream is active or not -boolean
+            camera: "" //indicate which camera is currently in use -string device's id
         }
 
-        this.camVideo = React.createRef();
+        this.camVideo = React.createRef(); //video DOM element
     }
 
     // after component mounted, set up contraints and start the stream.
     componentDidMount() {
 
+        //reason that make it to member is we'll set device constraint while selecting devices
         this.constraints = {
             audio: false,
             video: {
@@ -26,15 +27,6 @@ class Webcam extends React.Component {
             }
         }
         this.startStream();
-    }
-
-    // to switch on/off video stream
-    videoSwitch = () => {
-        if (this.state.streamState === true) {
-            this.endStream();
-        } else {
-            this.startStream();
-        }
     }
 
     // to end video stream
@@ -63,10 +55,10 @@ class Webcam extends React.Component {
                 if (this.videoDevices) {
                     let camera;
                     this.options = this.videoDevices.map((device) => {
-                        if (device.label === this.videoTracks[0].label) {
+                        if (device.label === this.videoTracks[0].label) { //if the deivce is currently in use, save its id to state
                             camera = device.deviceId;
                         }
-                        return <option key={device.deviceId} value={device.deviceId} >{device.label}</option>
+                        return <option key={device.deviceId} value={device.deviceId} >{device.label}</option> //save devices info, and render them in options 
                     })
                     this.setState({ camera, streamState: true });
                 }
@@ -110,15 +102,13 @@ class Webcam extends React.Component {
     render() {
         console.log("render");
         let options = this.options;
-
+   
         return (
             <div>
                 {this.state.errorMsg ? (<p> {this.state.errorMsg} </p>) :
                     (
                         <div>
-
                             <video controls={true} className="webcam" ref={this.camVideo} autoPlay playsInline hidden={false}></video>
-
                             <br />
                             <button onClick={this.startStream} hidden={this.state.streamState}>create stream</button>
                             <button onClick={this.endStream} hidden={!this.state.streamState}>release stream</button>
@@ -126,10 +116,7 @@ class Webcam extends React.Component {
                                 {options}
                             </select>
                             <br />
-                            {(this.state.streamState) ? <Canvas /> :
-                                <p> Create stream first </p>
-                            }
-
+                            <Canvas streamState={this.state.streamState} />
                         </div>
 
                     )
