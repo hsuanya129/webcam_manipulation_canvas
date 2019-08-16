@@ -1,10 +1,10 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "01e143c8c0c4d38fd44bab8634b18a83",
+    "revision": "cc030dd3161848625381d6f0ab839170",
     "url": "/webcam_manipulation_canvas/index.html"
   },
   {
-    "revision": "0b777aba463610afd726",
+    "revision": "a1a44313ca5eb9dfe78a",
     "url": "/webcam_manipulation_canvas/static/css/main.e8e7cc1b.chunk.css"
   },
   {
@@ -12,8 +12,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/webcam_manipulation_canvas/static/js/2.548e0644.chunk.js"
   },
   {
-    "revision": "0b777aba463610afd726",
-    "url": "/webcam_manipulation_canvas/static/js/main.6122f8e3.chunk.js"
+    "revision": "a1a44313ca5eb9dfe78a",
+    "url": "/webcam_manipulation_canvas/static/js/main.bae1b785.chunk.js"
   },
   {
     "revision": "88338fb3879b6bbd3809",
